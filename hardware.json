@@ -1,0 +1,17 @@
+{
+  "hardware": [
+    {
+      "id": "fefbbed6-900b-4d85-ac26-59cdf122c583:hiwonder_rrc_board",
+      "driver": "hiwonder_rrc_board",
+      "params": {}
+    },
+    {
+      "id": "69eaea69650da4466a52d346",
+      "driver": "hiwonder_rrc_motor",
+      "params": {
+        "port": 1
+      },
+      "host": "fefbbed6-900b-4d85-ac26-59cdf122c583:hiwonder_rrc_board"
+    }
+  ]
+}

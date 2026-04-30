@@ -1,0 +1,67 @@
+{
+  "type": "controller",
+  "name": "Motor Controller",
+  "entry_point": "motor_controller/node.py",
+  "topics": [
+    {
+      "name": "command",
+      "direction": "subscribe",
+      "msg_type": "std_msgs/Float64"
+    }
+  ],
+  "services": [],
+  "actions": [],
+  "parameters_schema": {
+    "motor_id": {
+      "label": "Motor",
+      "requiresInstance": true,
+      "type": "entity",
+      "required": true,
+      "description": "Joint this controller drives in open-loop speed/duty mode. Resolves to a joint IO on a Part added to the robot. Serialized to hardware.json at deploy.",
+      "entity_source": {
+        "selector": "components.io",
+        "filters": { "direction": "output", "type": "joint" },
+        "value_field": "_id",
+        "label_field": "name"
+      },
+      "ui": { "group": "Motor", "order": 1 }
+    },
+    "mode": {
+      "label": "Mode",
+      "type": "enum",
+      "values": ["speed", "duty"],
+      "default": "speed",
+      "description": "SPEED uses rad/s (or driver-native units); DUTY uses a normalized [-1, 1] value.",
+      "ui": { "group": "Motor", "order": 2 }
+    },
+    "max_speed": {
+      "label": "Max Speed",
+      "type": "number",
+      "units": "rad/s",
+      "source": "entity_property",
+      "editable": false,
+      "binding": {
+        "from_param": "motor_id",
+        "field_path": "specs.max_velocity.value"
+      },
+      "ui": { "group": "Motor", "order": 3 }
+    },
+    "reverse": {
+      "label": "Reverse Direction",
+      "type": "boolean",
+      "default": false,
+      "description": "Negate command before emitting. Use for motors mounted mirrored from the convention (e.g. left-side drive wheels).",
+      "ui": { "group": "Motor", "order": 4 }
+    },
+    "timeout_s": {
+      "label": "Command Timeout (s)",
+      "type": "number",
+      "default": 0.0,
+      "description": "Watchdog timeout applied to every command; 0 uses the driver default.",
+      "ui": { "group": "Motor", "order": 5 }
+    }
+  },
+  "defaults": {
+    "rate_hz": 50
+  }
+}
