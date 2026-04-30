@@ -12,6 +12,30 @@
         "port": 1
       },
       "host": "fefbbed6-900b-4d85-ac26-59cdf122c583:hiwonder_rrc_board"
+    },
+    {
+      "id": "69eaea6f650da4466a52d3bc",
+      "driver": "hiwonder_rrc_motor",
+      "params": {
+        "port": 2
+      },
+      "host": "fefbbed6-900b-4d85-ac26-59cdf122c583:hiwonder_rrc_board"
+    },
+    {
+      "id": "69eb7514650da4466a52d93e",
+      "driver": "hiwonder_rrc_motor",
+      "params": {
+        "port": 4
+      },
+      "host": "fefbbed6-900b-4d85-ac26-59cdf122c583:hiwonder_rrc_board"
+    },
+    {
+      "id": "69eb7517650da4466a52d9c4",
+      "driver": "hiwonder_rrc_motor",
+      "params": {
+        "port": 3
+      },
+      "host": "fefbbed6-900b-4d85-ac26-59cdf122c583:hiwonder_rrc_board"
     }
   ]
 }
