@@ -102,4 +102,18 @@ def generate_launch_description():
                 "POLYFLOW_OUTBOUND_CONNECTIONS": json.dumps(json.loads('[{"connection_id":"69f033a186ddc7307fba52ac","target_node_id":"69ed68a8650da4466a52f19c","source_pin_id":"cmd_vel","target_pin_id":"cmd_vel"}]')),
             }
         ),
+        Node(
+            package="logger",
+            executable="logger_node",
+            name="logger_n69f4bd3a907bab700a8c8217",
+            output="screen",
+            additional_env={
+                "POLYFLOW_NODE_ID": "69f4bd3a907bab700a8c8217",
+                "POLYFLOW_PARAMETERS": json.dumps(json.loads('{"log_file":"","log_to_stdout":true}')),
+                "POLYFLOW_CONFIGURATION": json.dumps(json.loads('{}')),
+                "POLYFLOW_PINS": json.dumps(json.loads('[]')),
+                "POLYFLOW_INBOUND_CONNECTIONS": json.dumps(json.loads('[]')),
+                "POLYFLOW_OUTBOUND_CONNECTIONS": json.dumps(json.loads('[]')),
+            }
+        ),
     ])
