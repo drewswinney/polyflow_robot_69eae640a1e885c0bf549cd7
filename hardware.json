@@ -1,61 +1,38 @@
 {
-  "hardware": [
+  "adapters": [
     {
-      "id": "fefbbed6_900b_4d85_ac26_59cdf122c583_hiwonder_rrc_board",
-      "driver": "hiwonder_rrc_board",
+      "name": "hiwonder_rrc_board",
       "params": {}
-    },
-    {
-      "id": "69e6e1ae53788f3fadcfcbb1_hiwonder_rrc_board",
-      "driver": "hiwonder_rrc_board",
-      "params": {}
-    },
-    {
-      "id": "69e6dfa653788f3fadcfc5a7_hiwonder_rrc_board",
-      "driver": "hiwonder_rrc_board",
-      "params": {}
-    },
-    {
-      "id": "69e6dfa653788f3fadcfc5a7_hiwonder_rrc_board",
-      "driver": "hiwonder_rrc_board",
-      "params": {}
-    },
-    {
-      "id": "69e6e1ae53788f3fadcfcbb1_hiwonder_rrc_board",
-      "driver": "hiwonder_rrc_board",
-      "params": {}
-    },
+    }
+  ],
+  "drivers": [
     {
       "id": "69eaea69650da4466a52d346",
-      "driver": "hiwonder_rrc_motor",
+      "name": "hiwonder_rrc_motor",
       "params": {
         "port": 1
-      },
-      "host": "fefbbed6_900b_4d85_ac26_59cdf122c583_hiwonder_rrc_board"
+      }
     },
     {
       "id": "69eaea6f650da4466a52d3bc",
-      "driver": "hiwonder_rrc_motor",
+      "name": "hiwonder_rrc_motor",
       "params": {
         "port": 2
-      },
-      "host": "fefbbed6_900b_4d85_ac26_59cdf122c583_hiwonder_rrc_board"
+      }
     },
     {
       "id": "69eb7514650da4466a52d93e",
-      "driver": "hiwonder_rrc_motor",
+      "name": "hiwonder_rrc_motor",
       "params": {
         "port": 4
-      },
-      "host": "fefbbed6_900b_4d85_ac26_59cdf122c583_hiwonder_rrc_board"
+      }
     },
     {
       "id": "69eb7517650da4466a52d9c4",
-      "driver": "hiwonder_rrc_motor",
+      "name": "hiwonder_rrc_motor",
       "params": {
         "port": 3
-      },
-      "host": "fefbbed6_900b_4d85_ac26_59cdf122c583_hiwonder_rrc_board"
+      }
     }
   ]
 }
