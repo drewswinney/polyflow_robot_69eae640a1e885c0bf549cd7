@@ -5,6 +5,7 @@ import asyncio
 import sys
 import threading
 import traceback
+from datetime import datetime
 import rclpy
 from rclpy.node import Node
 from rclpy.executors import SingleThreadedExecutor
@@ -138,6 +139,12 @@ class PolyflowNode(Node):
         # --- Logging (system-level topic, not a pin) ---
         self._log_publisher = None  # Lazy-initialized on first self.log() call
 
+        # --- Per-node trace log (pin IN/OUT) ---
+        self._node_log_file = self._open_node_log()
+        # Last content-signature per "{direction}:{pin_id}" so we suppress
+        # consecutive identical traces (motors etc. spam unchanged commands).
+        self._last_trace_sig: Dict[str, str] = {}
+
     # --- Kernel callbacks ---
 
     def _kernel_emit(self, pin_id: str, data: dict):
@@ -215,24 +222,75 @@ class PolyflowNode(Node):
         injection_sub = self.create_subscription(
             msg_type,
             injection_topic,
-            make_callback(pin_id),
+            lambda msg, p_id=pin_id: self._injection_input_callback(p_id, msg),
             queue_size
         )
         self._pin_subscribers[f"{pin_id}:__inject__"] = injection_sub
-        self.get_logger().info(f"Input pin '{pin_id}' <- {injection_topic} [direct injection]")
+        self.get_logger().info(f"Input pin '{pin_id}' <- {injection_topic} [direct injection, {msg_type.__name__}]")
 
         if not sources_found:
             self.get_logger().debug(f"Input pin '{pin_id}' registered but no inbound connections found")
 
     def _typed_input_callback(self, pin_id: str, msg: Any):
         """Routes incoming typed messages to process_input."""
-        self.get_logger().info(f"[debug] _typed_input_callback pin='{pin_id}' msg={msg}")
         try:
             self.process_input(pin_id, msg)
         except Exception as e:
             self.get_logger().error(f"Error processing input on pin '{pin_id}': {e}")
 
+    def _injection_input_callback(self, pin_id: str, msg: Any):
+        """Direct-injection variant — traces the input before routing."""
+        self._trace_pin("INJ", pin_id, msg)
+        self.get_logger().info(f"Direct injection on pin '{pin_id}': {msg}")
+        self._typed_input_callback(pin_id, msg)
+
     # --- Helpers ---
+
+    def _open_node_log(self) -> Optional[Any]:
+        """Open the per-node trace log file if POLYFLOW_NODE_LOG_DIR is set."""
+        log_dir = os.environ.get("POLYFLOW_NODE_LOG_DIR")
+        if not log_dir:
+            return None
+        try:
+            os.makedirs(log_dir, exist_ok=True)
+            path = os.path.join(log_dir, f"{self.node_id}.log")
+            return open(path, "a", buffering=1)
+        except OSError as e:
+            self.get_logger().warning(f"Could not open node log file in '{log_dir}': {e}")
+            return None
+
+    def _trace_pin(self, direction: str, pin_id: str, msg: Any) -> None:
+        """Write a single IN/OUT line to the per-node trace log."""
+        if self._node_log_file is None:
+            return
+        sig = self._trace_signature(msg)
+        key = f"{direction}:{pin_id}"
+        if self._last_trace_sig.get(key) == sig:
+            return
+        self._last_trace_sig[key] = sig
+        try:
+            ts = datetime.now().isoformat(timespec="milliseconds")
+            msg_repr = repr(msg)
+            if len(msg_repr) > 200:
+                msg_repr = msg_repr[:200] + "..."
+            self._node_log_file.write(f"{ts} {direction:<3} {pin_id} {msg_repr}\n")
+        except OSError:
+            pass
+
+    def _trace_signature(self, msg: Any) -> str:
+        """Stable repr of a message's content, ignoring timestamp fields so
+        repeated commands with fresh stamps still compare equal."""
+        def strip(value: Any) -> Any:
+            if hasattr(value, "get_fields_and_field_types"):
+                return {
+                    name: strip(getattr(value, name))
+                    for name in value.get_fields_and_field_types()
+                    if name != "stamp"
+                }
+            if isinstance(value, (list, tuple)):
+                return [strip(item) for item in value]
+            return value
+        return repr(strip(msg))
 
     def _load_json_env(self, key: str, default: Any) -> Any:
         """Safely loads a JSON string from an environment variable."""
@@ -293,7 +351,7 @@ class PolyflowNode(Node):
             return
 
         publisher.publish(msg)
-        self.get_logger().debug(f"Published on pin '{pin_id}'")
+        self._trace_pin("OUT", pin_id, msg)
 
     def log(self, message: str):
         """
