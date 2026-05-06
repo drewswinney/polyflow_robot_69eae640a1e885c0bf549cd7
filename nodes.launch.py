@@ -86,7 +86,7 @@ def generate_launch_description():
             output="screen",
             additional_env={
                 "POLYFLOW_NODE_ID": "69ed68a8650da4466a52f19c",
-                "POLYFLOW_PARAMETERS": json.dumps(json.loads('{"wheel_radius":0.095,"wheel_separation":0.24,"max_wheel_speed":1800}')),
+                "POLYFLOW_PARAMETERS": json.dumps(json.loads('{"wheel_radius":0.095,"wheel_separation":0.24,"max_wheel_speed":360}')),
                 "POLYFLOW_CONFIGURATION": json.dumps(json.loads('{"namespace":null,"rate_hz":50,"lifecycle":null}')),
                 "POLYFLOW_PINS": json.dumps(json.loads('[{"pin_id":"69a3e71bcd15153dec61d7f8:cmd_vel","name":"cmd_vel","direction":"input","msg_type":"geometry_msgs/Twist"},{"pin_id":"69a3e71bcd15153dec61d7f8:mode","name":"mode","direction":"input","msg_type":"polyflow_msgs/ModeState"},{"pin_id":"69a3e71bcd15153dec61d7f8:front_left_motor","name":"front_left_motor","direction":"output","msg_type":"std_msgs/Float64"},{"pin_id":"69a3e71bcd15153dec61d7f8:rear_left_motor","name":"rear_left_motor","direction":"output","msg_type":"std_msgs/Float64"},{"pin_id":"69a3e71bcd15153dec61d7f8:front_right_motor","name":"front_right_motor","direction":"output","msg_type":"std_msgs/Float64"},{"pin_id":"69a3e71bcd15153dec61d7f8:rear_right_motor","name":"rear_right_motor","direction":"output","msg_type":"std_msgs/Float64"}]')),
                 "POLYFLOW_INBOUND_CONNECTIONS": json.dumps(json.loads('[{"connection_id":"69f033a186ddc7307fba52ac","source_node_id":"69f0339c86ddc7307fba51e9","source_pin_id":"cmd_vel","target_pin_id":"cmd_vel"},{"connection_id":"69f033ac86ddc7307fba53e1","source_node_id":"69f033a586ddc7307fba531e","source_pin_id":"mode","target_pin_id":"mode"}]')),
