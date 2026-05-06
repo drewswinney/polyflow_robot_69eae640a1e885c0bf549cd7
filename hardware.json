@@ -6,6 +6,26 @@
       "params": {}
     },
     {
+      "id": "69e6e1ae53788f3fadcfcbb1_hiwonder_rrc_board",
+      "driver": "hiwonder_rrc_board",
+      "params": {}
+    },
+    {
+      "id": "69e6dfa653788f3fadcfc5a7_hiwonder_rrc_board",
+      "driver": "hiwonder_rrc_board",
+      "params": {}
+    },
+    {
+      "id": "69e6dfa653788f3fadcfc5a7_hiwonder_rrc_board",
+      "driver": "hiwonder_rrc_board",
+      "params": {}
+    },
+    {
+      "id": "69e6e1ae53788f3fadcfcbb1_hiwonder_rrc_board",
+      "driver": "hiwonder_rrc_board",
+      "params": {}
+    },
+    {
       "id": "69eaea69650da4466a52d346",
       "driver": "hiwonder_rrc_motor",
       "params": {
