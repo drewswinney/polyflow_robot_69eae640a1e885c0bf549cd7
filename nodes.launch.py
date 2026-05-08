@@ -26,7 +26,7 @@ def generate_launch_description():
             output="screen",
             additional_env={
                 "POLYFLOW_NODE_ID": "69ed689d650da4466a52f065",
-                "POLYFLOW_PARAMETERS": json.dumps(json.loads('{"motor_id":"69fe6819f3f3cdb3770f7095","mode":"speed","max_speed":6.2832,"reverse":false,"timeout_s":0}')),
+                "POLYFLOW_PARAMETERS": json.dumps(json.loads('{"motor_id":"69fe6819f3f3cdb3770f7095","mode":"speed","max_speed":6.2832,"reverse":true,"timeout_s":0}')),
                 "POLYFLOW_CONFIGURATION": json.dumps(json.loads('{"namespace":null,"rate_hz":50,"lifecycle":null}')),
                 "POLYFLOW_PINS": json.dumps(json.loads('[{"pin_id":"69a3e541cd15153dec61d7af:command","name":"command","direction":"input","msg_type":"std_msgs/Float64"}]')),
                 "POLYFLOW_INBOUND_CONNECTIONS": json.dumps(json.loads('[{"connection_id":"69ed68f1650da4466a52f340","source_node_id":"69ed68a8650da4466a52f19c","source_pin_id":"front_right_motor","target_pin_id":"command"}]')),

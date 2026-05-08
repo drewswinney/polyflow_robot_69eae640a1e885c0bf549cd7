@@ -14,7 +14,7 @@
       "params": {
         "port": 4,
         "debug_log": true,
-        "max_speed_rad_s": 7.0001,
+        "max_speed_rad_s": 7,
         "invert": false
       }
     },
