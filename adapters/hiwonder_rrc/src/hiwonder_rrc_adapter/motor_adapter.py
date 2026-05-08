@@ -2,8 +2,19 @@
 HiwonderRRCMotorAdapter — one logical motor on an RRC motor channel.
 
 Consumes MotorCommand (SPEED rad/s, DUTY [-1,1], IDLE) and HardwareLifecycle.
-Publishes MotorState. The RRC firmware does not report encoder feedback,
-so measured_value mirrors the last commanded value.
+Publishes MotorState.
+
+The RRC firmware's PID-speed mode (sub-cmd 0x00/0x01) needs encoder
+feedback to behave, and encoder hardware is currently broken — any
+nonzero speed setpoint saturates to full PWM. This adapter therefore
+maps both SPEED and DUTY commands onto raw-PWM (sub-cmd 0x04) so motion
+is at least predictable open-loop. SPEED uses `max_speed_rad_s` as the
+linear full-scale point. Once encoders are fixed, switch SPEED back to
+`set_motor_speed`.
+
+Motor-state telemetry (SYS sub-cmd 0x05, 20 Hz) is decoded by the driver
+and surfaced here as MotorState.measured_value. counter and rps will
+read 0 until the encoder hardware is fixed.
 """
 
 import math
@@ -26,6 +37,7 @@ from .rrc import HiwonderRRC
 
 
 _TWO_PI = 2.0 * math.pi
+_PWM_FULL_SCALE = 1000
 
 
 class HiwonderRRCMotorAdapter(HardwareAdapter):
@@ -40,6 +52,10 @@ class HiwonderRRCMotorAdapter(HardwareAdapter):
         self.invert = bool(self.params.get("invert", False))
         self.state_hz = float(self.params.get("state_hz", 10.0))
         self.debug_log = bool(self.params.get("debug_log", False))
+        # SPEED rad/s at which raw PWM saturates to ±1000. Used to map
+        # MOTOR_MODE_SPEED into open-loop PWM while the on-board PID is
+        # unusable (encoder feedback broken in current firmware).
+        self.max_speed_rad_s = float(self.params.get("max_speed_rad_s", 5.0))
 
         self._rrc: Optional[HiwonderRRC] = None
         self._state_handle: Any = None
@@ -61,6 +77,7 @@ class HiwonderRRCMotorAdapter(HardwareAdapter):
             return
         self._rrc = rrc
 
+        # Ensure channel starts stopped.
         self._write_active_stop()
 
         if self.state_hz > 0:
@@ -90,11 +107,12 @@ class HiwonderRRCMotorAdapter(HardwareAdapter):
                 if value == 0.0:
                     self._write_active_stop()
                 else:
-                    rps = (value / _TWO_PI) * self.gear_ratio
-                    self._write_speed_rps(-rps if self.invert else rps)
+                    pwm = self._rad_s_to_pwm(value)
+                    self._write_pwm(-pwm if self.invert else pwm)
             elif mode == MOTOR_MODE_DUTY:
-                duty_pct = max(-1.0, min(1.0, value)) * 100.0
-                self._write_duty_pct(-duty_pct if self.invert else duty_pct)
+                duty = max(-1.0, min(1.0, value))
+                pwm = int(round(duty * _PWM_FULL_SCALE))
+                self._write_pwm(-pwm if self.invert else pwm)
             elif mode == MOTOR_MODE_IDLE:
                 self._write_active_stop()
                 value = 0.0
@@ -120,29 +138,29 @@ class HiwonderRRCMotorAdapter(HardwareAdapter):
 
     # --- Low-level writes ---
 
-    def _write_speed_rps(self, rps: float) -> None:
-        if self._rrc is None:
-            return
-        if self.debug_log:
-            self.log(f"port={self.port} write speed_rps={rps:+.4f}")
-        self._rrc.set_motor_speed([(self.port, float(rps))])
+    def _rad_s_to_pwm(self, rad_s: float) -> int:
+        if self.max_speed_rad_s <= 0.0:
+            return 0
+        scaled = (rad_s / self.max_speed_rad_s) * _PWM_FULL_SCALE
+        return max(-_PWM_FULL_SCALE, min(_PWM_FULL_SCALE, int(round(scaled))))
 
-    def _write_duty_pct(self, duty: float) -> None:
+    def _write_pwm(self, pwm: int) -> None:
         if self._rrc is None:
             return
         if self.debug_log:
-            self.log(f"port={self.port} write duty_pct={duty:+.2f}")
-        self._rrc.set_motor_duty([(self.port, float(duty))])
+            self.log(f"port={self.port} write pwm={pwm:+d}")
+        self._rrc.set_motor_pwm(self.port, pwm)
 
     def _write_active_stop(self) -> None:
-        # RRC firmware treats set_motor_speed(0) as "no command, hold last
-        # PID target" — wheels coast indefinitely. set_motor_duty(0) shorts
-        # the H-bridge for an active brake. We send both so the PID setpoint
-        # is also reset for the next non-zero speed command.
+        # Bitmask stop sub-command (0x03) — chosen over per-channel stop
+        # because at least one shipping firmware variant only slows the
+        # motor in response to the per-channel form. set_motor_speed(0)
+        # is also unusable as a halt — firmware treats it as "no command".
+        if self._rrc is None:
+            return
         if self.debug_log:
-            self.log(f"port={self.port} active_stop")
-        self._write_speed_rps(0.0)
-        self._write_duty_pct(0.0)
+            self.log(f"port={self.port} stop")
+        self._rrc.stop_motor(self.port)
 
     def _safe_stop(self) -> None:
         try:
@@ -153,6 +171,19 @@ class HiwonderRRCMotorAdapter(HardwareAdapter):
         self._commanded_value = 0.0
 
     # --- Periodic ---
+
+    def _measured_value(self) -> float:
+        """Current motor speed (rad/s on the output shaft) from telemetry,
+        or the commanded value if no telemetry is available yet."""
+        if self._rrc is None:
+            return 0.0
+        sample = self._rrc.get_motor_state(self.port)
+        if sample is None:
+            return self._commanded_value
+        _counter, rps, _age = sample
+        rad_s_motor = rps * _TWO_PI
+        rad_s_output = rad_s_motor / self.gear_ratio if self.gear_ratio else rad_s_motor
+        return -rad_s_output if self.invert else rad_s_output
 
     def _publish_state(self) -> None:
         # Watchdog: if a timeout was set on the last command and it has elapsed, stop.
@@ -169,7 +200,7 @@ class HiwonderRRCMotorAdapter(HardwareAdapter):
             "motor_id": self.target_id,
             "mode": self._mode,
             "commanded_value": self._commanded_value,
-            "measured_value": self._commanded_value,
+            "measured_value": self._measured_value(),
             "current": 0.0,
             "connected": self._rrc is not None,
         })
