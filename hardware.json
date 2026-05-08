@@ -1,36 +1,4 @@
 {
   "adapters": [],
-  "drivers": [
-    {
-      "id": "69eaea69650da4466a52d346",
-      "name": "hiwonder_rrc_motor",
-      "params": {
-        "port": 1,
-        "debug_log": true
-      }
-    },
-    {
-      "id": "69eaea6f650da4466a52d3bc",
-      "name": "hiwonder_rrc_motor",
-      "params": {
-        "port": 2,
-        "debug_log": false
-      }
-    },
-    {
-      "id": "69eb7514650da4466a52d93e",
-      "name": "hiwonder_rrc_motor",
-      "params": {
-        "port": 4,
-        "debug_log": true
-      }
-    },
-    {
-      "id": "69eb7517650da4466a52d9c4",
-      "name": "hiwonder_rrc_motor",
-      "params": {
-        "port": 3
-      }
-    }
-  ]
+  "drivers": []
 }
