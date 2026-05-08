@@ -13,7 +13,9 @@
       "host": "p_69fe6808f3f3cdb3770f6e2b_hiwonder_rrc_board",
       "params": {
         "port": 4,
-        "debug_log": true
+        "debug_log": true,
+        "max_speed_rad_s": 7.0001,
+        "invert": false
       }
     },
     {
@@ -22,8 +24,9 @@
       "host": "p_69fe6808f3f3cdb3770f6e2b_hiwonder_rrc_board",
       "params": {
         "port": 1,
-        "invert": true,
-        "debug_log": true
+        "invert": false,
+        "debug_log": true,
+        "max_speed_rad_s": 7
       }
     }
   ]
