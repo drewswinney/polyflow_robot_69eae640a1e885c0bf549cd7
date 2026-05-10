@@ -8,6 +8,14 @@
   ],
   "drivers": [
     {
+      "id": "69fe6812f3f3cdb3770f6f72",
+      "name": "hiwonder_rrc_motor",
+      "host": "p_69fe6808f3f3cdb3770f6e2b_hiwonder_rrc_board",
+      "params": {
+        "port": 3
+      }
+    },
+    {
       "id": "69fe6816f3f3cdb3770f7001",
       "name": "hiwonder_rrc_motor",
       "host": "p_69fe6808f3f3cdb3770f6e2b_hiwonder_rrc_board",
@@ -27,6 +35,14 @@
         "invert": false,
         "debug_log": true,
         "max_speed_rad_s": 7
+      }
+    },
+    {
+      "id": "69fe681cf3f3cdb3770f7130",
+      "name": "hiwonder_rrc_motor",
+      "host": "p_69fe6808f3f3cdb3770f6e2b_hiwonder_rrc_board",
+      "params": {
+        "port": 2
       }
     }
   ]
