@@ -18,22 +18,25 @@ class MotorControllerKernel(PolyflowKernel):
     """
     Portable logic for a motor controller.
 
-    Receives a scalar command on "command" and emits a MotorCommand-shaped
-    dict for the polyflow-os hardware daemon to route to the appropriate
-    board driver.
+    Receives a scalar command on "command", clamps/reverses it, and emits
+    a MotorCommand-shaped dict on the internal "hw_command" channel for
+    the node to type up and publish on the PRP hardware command topic.
 
     Input pins (as dicts):
         command — {"data": <float>}
 
-    Output pins (as dicts):
-        hw_motor_command — MotorCommand fields
+    Output pins:
+        state — measured motor value as a raw float scalar
+
+    Internal kernel→node channel (not a graph pin):
+        hw_command — MotorCommand fields
             {motor_id, mode, value, timeout_s}
 
     Parameters:
         motor_id:   User-defined string ID (e.g., "left_drive").
         max_speed:  Clamp for SPEED mode. Ignored in DUTY mode (clamps to [-1, 1]).
         mode:       "speed" (default) or "duty".
-        reverse:    Negate command before emitting; for motors mounted
+        reverse:    Negate command before clamping; for motors mounted
                     mirrored from the convention (e.g. left-side drive
                     wheels whose joint axis points opposite the right side).
         timeout_s:  Watchdog seconds applied to every command; 0 = adapter default.
@@ -66,9 +69,30 @@ class MotorControllerKernel(PolyflowKernel):
         else:
             self._current_value = max(-self.max_speed, min(self.max_speed, raw))
 
-        self.emit("hw_motor_command", {
+        self.emit("hw_command", {
             "motor_id": self.motor_id,
             "mode": self.mode,
             "value": self._current_value,
             "timeout_s": self.timeout_s,
         })
+
+    # Suppress noise around zero. Physics-sim drift and real encoder
+    # quantization both produce sub-threshold values when the motor is
+    # commanded to stop — pinning those to 0 makes charts and downstream
+    # consumers see a clean rest state.
+    _STATE_DEADBAND = 0.05
+
+    def update_state(self, data: dict) -> None:
+        """Called by the node when a MotorState message for this motor arrives.
+
+        Re-emits the measured value as a raw float on the graph "state" pin so
+        consumers (e.g. a studio chart widget) get a clean scalar without
+        hardware-bridge fields leaking into the graph.
+        """
+        if data.get("motor_id") and data.get("motor_id") != self.motor_id:
+            return
+
+        value = float(data.get("measured_value", 0.0) or 0.0)
+        if abs(value) < self._STATE_DEADBAND:
+            value = 0.0
+        self.emit("state", value)
