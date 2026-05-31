@@ -6,5 +6,38 @@
       "params": {}
     }
   ],
-  "drivers": []
+  "drivers": [
+    {
+      "id": "6a191cbd69e4685a4d03cb57",
+      "name": "hiwonder_rrc_motor",
+      "host": "p_6a1a0280f25f09515fe7ba1d_hiwonder_rrc_board",
+      "params": {
+        "port": 3
+      }
+    },
+    {
+      "id": "6a191cc069e4685a4d03cbdc",
+      "name": "hiwonder_rrc_motor",
+      "host": "p_6a1a0280f25f09515fe7ba1d_hiwonder_rrc_board",
+      "params": {
+        "port": 4
+      }
+    },
+    {
+      "id": "6a191cc369e4685a4d03cc68",
+      "name": "hiwonder_rrc_motor",
+      "host": "p_6a1a0280f25f09515fe7ba1d_hiwonder_rrc_board",
+      "params": {
+        "port": 1
+      }
+    },
+    {
+      "id": "6a191cc669e4685a4d03ccf2",
+      "name": "hiwonder_rrc_motor",
+      "host": "p_6a1a0280f25f09515fe7ba1d_hiwonder_rrc_board",
+      "params": {
+        "port": 2
+      }
+    }
+  ]
 }
